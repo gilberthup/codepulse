@@ -1,13 +1,12 @@
-version: 2.6.{build}
+version: 2.7.{build}
 image: Visual Studio 2017
 clone_folder: C:\CodePulse
 build_script:
-- cmd: powershell -file C:\CodePulse\installers\build.ps1 -version 2.6.0 -versionForDotNetTracerWindowsDownloadUrl 2.6.0 -useGitHubDotNetTracerWindowsDownloadUrl
-# - cmd: powershell -file C:\CodePulse\installers\build.ps1 -version %APPVEYOR_BUILD_VERSION% -versionForDotNetTracerWindowsDownloadUrl %APPVEYOR_JOB_ID% -skipMac -skipLinux # skips building packages for macOS and Linux
+# - cmd: powershell -file C:\CodePulse\installers\build.ps1 -version %APPVEYOR_BUILD_VERSION% -versionForDotNetTracerWindowsDownloadUrl %APPVEYOR_JOB_ID%
+-   cmd: powershell -file C:\CodePulse\installers\build.ps1 -version %APPVEYOR_BUILD_VERSION% -versionForDotNetTracerWindowsDownloadUrl %APPVEYOR_JOB_ID% -skipMac -skipLinux # skips building packages for macOS and Linux
 before_test:
 - cmd: >-
     C:\Windows\System32\regsvr32.exe C:\CodePulse\dotnet-tracer\main\bin\Release\x64\OpenCover.Profiler.dll /s
-
     C:\Windows\SysWOW64\regsvr32.exe C:\CodePulse\dotnet-tracer\main\bin\Release\x86\OpenCover.Profiler.dll /s
 test:
   assemblies:
@@ -20,22 +19,16 @@ test:
 after_test:
 - ps: >-
     $wc = New-Object 'System.Net.WebClient'
-
-
     C:\CodePulse\dotnet-tracer\main\bin\Release\x86\OpenCover.Test.Profiler.exe --gtest_output="xml:C:\CodePulse\OpenCover.Test.Profiler.x86.xml" --gtest_filter=-TimerTest*
-
     $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", "C:\CodePulse\OpenCover.Test.Profiler.x86.xml")
-
-
     C:\CodePulse\dotnet-tracer\main\bin\Release\x64\OpenCover.Test.Profiler.exe --gtest_output="xml:C:\CodePulse\OpenCover.Test.Profiler.x64.xml" --gtest_filter=-TimerTest*
-
     $wc.UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", "C:\CodePulse\OpenCover.Test.Profiler.x64.xml")
 artifacts:
-- path: installers\CodePulse-2.6.0-Linux-x64.zip #  Comment out when using -skipLinux switch
-  name: Code Pulse Linux                         #
-- path: installers\CodePulse-2.6.0-macOS-x64.zip #  Comment out when using -skipMac switch
-  name: Code Pulse Mac                           #
-- path: installers\CodePulse-2.6.0-Windows-x64.zip
+#- path: installers\CodePulse-$(APPVEYOR_BUILD_VERSION)-Linux-x64.zip #  Uncomment when not using -skipLinux switch
+#  name: Code Pulse Linux                                             #
+#- path: installers\CodePulse-$(APPVEYOR_BUILD_VERSION)-macOS-x64.zip #  Uncomment when not using -skipMac switch
+#  name: Code Pulse Mac                                               #
+- path: installers\CodePulse-$(APPVEYOR_BUILD_VERSION)-Windows-x64.zip
   name: Code Pulse Windows
-- path: installers\CodePulse-DotNetTracer-2.6.0-Windows.zip
+- path: installers\CodePulse-DotNetTracer-$(APPVEYOR_BUILD_VERSION)-Windows.zip
   name: Code Pulse .NET Tracer
